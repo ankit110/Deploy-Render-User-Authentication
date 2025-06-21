@@ -1,0 +1,23 @@
+server:
+  port: ${PORT:9090}
+#logging:
+#  level:
+#    io:
+#      jsonwebtoken: DEBUG
+#    org:
+#      springframework:
+#        security: DEBUG
+spring:
+  application:
+    name: User-Authentication
+  datasource:
+    url: ${DB_URL:postgresql://user_authentication_postgres_user:L2vkMwWGdftSDOSjvVFBvBADVsTDViGd@dpg-d1b7t53e5dus73eas710-a.oregon-postgres.render.com/user_authentication_postgres}
+    username: ${DB_USERNAME:user_authentication_postgres_user}
+    password: ${DB_PASSWORD:L2vkMwWGdftSDOSjvVFBvBADVsTDViGd}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+jwt:
+  secret: ${SECRET_KEY}
