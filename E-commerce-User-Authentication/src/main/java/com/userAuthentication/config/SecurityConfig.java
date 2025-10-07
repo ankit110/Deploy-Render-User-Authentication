@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,7 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -31,20 +32,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for stateless sessions
+            .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
+                // public endpoints
+                .requestMatchers("/", "/actuator/health").permitAll()
                 .requestMatchers("/api/v1/users/register", "/api/v1/users/login").permitAll()
-                .requestMatchers("/api/v1/products/**").hasAnyRole("USER", "ADMIN") // Allow both USER and ADMIN for getting products
-                .requestMatchers(HttpMethod.POST, "/api/v1/products/add").hasRole("ADMIN") //
-                .requestMatchers("/api/v1/findUsers/**").hasAnyRole("USER", "ADMIN")
+
+                // product access - assuming granted authorities are "USER" or "ADMIN"
+                .requestMatchers("/api/v1/products/**").hasAnyAuthority("USER", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/v1/products/add").hasAuthority("ADMIN")
+
+                .requestMatchers("/api/v1/findUsers/**").hasAnyAuthority("USER", "ADMIN")
                 .anyRequest().authenticated()
             )
-            .exceptionHandling(exception ->
-                exception.authenticationEntryPoint(new Http403ForbiddenEntryPoint()) // Handle unauthorized requests
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             );
+
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

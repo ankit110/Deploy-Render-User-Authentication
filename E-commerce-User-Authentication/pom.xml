@@ -80,7 +80,12 @@
 			<scope>runtime</scope>
 		</dependency>
 
-<!--		<dependency>-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<!--		<dependency>-->
 <!--			<groupId>jakarta.xml.bind</groupId>-->
 <!--			<artifactId>jakarta.xml.bind-api</artifactId>-->
 <!--			<version>3.0.1</version> &lt;!&ndash; Check for the latest version &ndash;&gt;-->
